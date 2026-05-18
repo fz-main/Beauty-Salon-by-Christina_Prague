@@ -1,780 +1,1559 @@
-This HTML delivers an immersive 3D brand experience for "Beauty Salon Prague by Christina," featuring a glossy pearl knot, diagonal scroll animations, and a luxury bento services grid.
 ```html
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" style="overflow-x: hidden;">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beauty Salon Prague by Christina | Premium Permanent Makeup & Brow Studio</title>
-    <meta name="description" content="Premium Permanent Makeup & Brow Studio in Prague, Rybná 716/24. Powder Brows, Lash Lamination, Advanced Skin Glow Aesthetics by Christina.">
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <style>
-        :root {
-            --nacre: #fff5ee;
-            --rose: #ffb6c1;
-            --deep: #0a0a0b;
-            --glass-bg: rgba(16, 16, 18, 0.55);
-            --glass-border: rgba(255, 245, 238, 0.12);
-            --glass-highlight: rgba(255, 245, 238, 0.04);
-            --text-primary: #f5efe8;
-            --text-secondary: #c4b8ad;
-            --accent-rose: #e8a0b0;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beauty Salon Prague by Christina</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --rose: #f4a7b9;
+    --gold: #d4af7a;
+    --cream: #fff5ee;
+    --dark: #0a0a0f;
+    --mid: #12121a;
+    --glass: rgba(255,245,238,0.06);
+    --glass-border: rgba(244,167,185,0.18);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-x: hidden; scroll-behavior: smooth; }
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'Georgia', serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+  #canvas-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+  }
+  #canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
 
-        * {
-            box-sizing: border-box;
-        }
-        html {
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            background: #0a0a0b;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: var(--text-primary);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+  /* NAVBAR */
+  #navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.2rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid var(--glass-border);
+    transition: all 0.4s ease;
+  }
+  .logo-text {
+    font-size: 1.1rem; letter-spacing: 0.38em; text-transform: uppercase;
+    color: var(--cream); font-weight: 400;
+    background: linear-gradient(90deg, var(--cream) 0%, var(--rose) 50%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lang-switcher { display: flex; gap: 0.6rem; }
+  .lang-btn {
+    background: none; border: 1px solid var(--glass-border);
+    color: var(--cream); font-size: 0.72rem; letter-spacing: 0.15em;
+    padding: 0.3rem 0.7rem; cursor: pointer; border-radius: 2px;
+    transition: all 0.3s ease; text-transform: uppercase;
+  }
+  .lang-btn:hover, .lang-btn.active {
+    background: var(--rose); color: var(--dark);
+    border-color: var(--rose);
+  }
 
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
-        #canvas-container canvas {
-            display: block;
-        }
+  /* SECTIONS */
+  section { position: relative; z-index: 1; }
+  #hero {
+    height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 2rem;
+  }
+  .hero-eyebrow {
+    font-size: 0.72rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 1.4rem; opacity: 0;
+    transform: translateY(20px);
+  }
+  .hero-title {
+    font-size: clamp(2.8rem, 7vw, 6.5rem);
+    font-weight: 300; line-height: 1.08;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, var(--cream) 0%, var(--rose) 45%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    opacity: 0; transform: translateY(30px);
+  }
+  .hero-subtitle {
+    margin-top: 1.8rem; font-size: clamp(0.9rem, 2vw, 1.15rem);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,245,238,0.55); opacity: 0; transform: translateY(20px);
+  }
+  .hero-cta {
+    margin-top: 3rem; display: inline-block;
+    padding: 1rem 3rem; border: 1px solid var(--rose);
+    color: var(--rose); font-size: 0.78rem; letter-spacing: 0.35em;
+    text-transform: uppercase; text-decoration: none;
+    position: relative; overflow: hidden;
+    transition: color 0.4s ease; opacity: 0; transform: translateY(20px);
+  }
+  .hero-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--rose); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease; z-index: -1;
+  }
+  .hero-cta:hover { color: var(--dark); }
+  .hero-cta:hover::before { transform: scaleX(1); }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-highlight);
-        }
-        .glass-nav {
-            background: rgba(10, 10, 11, 0.7);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border-bottom: 1px solid rgba(255, 245, 238, 0.08);
-            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.4);
-        }
+  /* SCROLL INDICATOR */
+  .scroll-indicator {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    opacity: 0.5;
+  }
+  .scroll-indicator span {
+    font-size: 0.6rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--rose);
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--rose), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.3; transform: scaleY(0.7); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
 
-        .bento-card {
-            background: rgba(18, 18, 20, 0.6);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 245, 238, 0.1);
-            border-radius: 22px;
-            cursor: default;
-            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            position: relative;
-        }
-        .bento-card:hover {
-            border-color: rgba(255, 182, 193, 0.35);
-            box-shadow: 0 12px 50px rgba(255, 182, 193, 0.12), 0 4px 30px rgba(0, 0, 0, 0.4);
-            transform: translateY(-3px);
-        }
-        .bento-card .card-shimmer {
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at center, rgba(255, 245, 238, 0.03) 0%, transparent 70%);
-            pointer-events: none;
-            transition: opacity 0.5s;
-            opacity: 0;
-        }
-        .bento-card:hover .card-shimmer {
-            opacity: 1;
-        }
+  /* SERVICES SECTION */
+  #services {
+    min-height: 100vh; padding: 8rem 2rem 4rem;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .section-label {
+    font-size: 0.65rem; letter-spacing: 0.55em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 0.8rem;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 4.5vw, 3.8rem);
+    font-weight: 300; text-align: center; letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--cream) 0%, var(--rose) 60%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 4rem;
+  }
 
-        .specialist-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 20px;
-            background: rgba(18, 18, 20, 0.5);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 245, 238, 0.08);
-            transition: all 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        .specialist-card .spec-img {
-            filter: grayscale(100%) brightness(0.7);
-            transition: all 0.9s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        .specialist-card:hover .spec-img {
-            filter: grayscale(0%) brightness(1);
-        }
-        .specialist-card:hover {
-            border-color: rgba(255, 182, 193, 0.3);
-            box-shadow: 0 16px 55px rgba(255, 182, 193, 0.1);
-        }
+  /* BENTO GRID */
+  #bento-wrapper { width: 100%; max-width: 1200px; overflow: visible; }
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+  }
+  @media (max-width: 900px) {
+    .bento-grid { grid-template-columns: 1fr; }
+  }
+  .bento-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    padding: 2.5rem 2rem;
+    position: relative; overflow: hidden;
+    transform-style: preserve-3d;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    cursor: default;
+    will-change: transform;
+  }
+  .bento-card:hover {
+    border-color: var(--rose);
+    box-shadow: 0 0 40px rgba(244,167,185,0.12), 0 0 80px rgba(244,167,185,0.05);
+  }
+  .bento-card.featured {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(244,167,185,0.08) 0%, rgba(212,175,122,0.05) 100%);
+  }
+  .bento-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+    opacity: 0; transition: opacity 0.4s ease;
+  }
+  .bento-card:hover::before { opacity: 1; }
+  .bento-num {
+    font-size: 0.6rem; letter-spacing: 0.4em; color: var(--rose);
+    margin-bottom: 1.2rem; display: block;
+  }
+  .bento-title {
+    font-size: 1.3rem; font-weight: 300; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--cream);
+    margin-bottom: 0.8rem;
+  }
+  .bento-desc {
+    font-size: 0.85rem; line-height: 1.8;
+    color: rgba(255,245,238,0.55);
+    filter: blur(6px); transition: filter 0.6s ease;
+  }
+  .bento-card:hover .bento-desc { filter: blur(0); }
+  .bento-price {
+    margin-top: 1.5rem; font-size: 0.7rem; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .bento-tag {
+    position: absolute; top: 1.2rem; right: 1.2rem;
+    font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--dark); background: var(--rose); padding: 0.25rem 0.6rem;
+    border-radius: 2px;
+  }
+  .bento-icon {
+    font-size: 2rem; margin-bottom: 1rem; display: block;
+    filter: drop-shadow(0 0 8px rgba(244,167,185,0.5));
+  }
 
-        .reveal-text {
-            transition: filter 1.2s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        .reveal-text.blurred {
-            filter: blur(10px);
-            opacity: 0;
-        }
-        .reveal-text.clear {
-            filter: blur(0px);
-            opacity: 1;
-        }
+  /* DATA PULSE TICKER */
+  #pulse-ticker {
+    width: 100%; overflow: hidden; padding: 1rem 0;
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    margin: 2rem 0; position: relative; z-index: 2;
+  }
+  .ticker-track {
+    display: flex; gap: 4rem; white-space: nowrap;
+    animation: tickerScroll 20s linear infinite;
+  }
+  .ticker-item {
+    font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--rose); display: flex; align-items: center; gap: 1rem;
+  }
+  .ticker-item::after { content: '◆'; color: var(--gold); font-size: 0.5rem; }
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 
-        .dark-map iframe {
-            filter: invert(0.92) hue-rotate(180deg) brightness(0.75) contrast(1.25) saturate(0.4);
-            border-radius: 20px;
-        }
+  /* DIAGONAL PARTICLE CANVAS */
+  #particle-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+    opacity: 0;
+  }
 
-        .data-pulse {
-            position: fixed;
-            pointer-events: none;
-            z-index: 5;
-            font-family: 'Inter', 'Segoe UI', monospace;
-            font-weight: 700;
-            font-size: 0.85rem;
-            letter-spacing: 0.18em;
-            color: #ffb6c1;
-            text-shadow: 0 0 18px rgba(255, 182, 193, 0.8), 0 0 40px rgba(255, 182, 193, 0.4);
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .data-pulse.active {
-            opacity: 1;
-        }
+  /* SPECIALISTS SECTION */
+  #specialists {
+    padding: 8rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .specialists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem; max-width: 1200px; width: 100%; margin-top: 3rem;
+  }
+  .specialist-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px; padding: 2.5rem;
+    position: relative; overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .specialist-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 60px rgba(212,175,122,0.1);
+    transform: translateY(-4px);
+  }
+  .specialist-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose), var(--gold));
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 0 30px rgba(244,167,185,0.3);
+  }
+  .specialist-name {
+    font-size: 1.1rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--cream); margin-bottom: 0.4rem;
+  }
+  .specialist-role {
+    font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 1.2rem;
+  }
+  .specialist-bio {
+    font-size: 0.82rem; line-height: 1.9;
+    color: rgba(255,245,238,0.55);
+  }
+  .specialist-skills {
+    margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .skill-tag {
+    font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+    border: 1px solid var(--glass-border); color: var(--rose);
+    padding: 0.25rem 0.6rem; border-radius: 2px;
+  }
+  .specialist-rating {
+    margin-top: 1.2rem; display: flex; gap: 0.2rem;
+  }
+  .star { color: var(--gold); font-size: 0.75rem; }
 
-        .lang-btn {
-            transition: all 0.3s;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            letter-spacing: 0.06em;
-            cursor: pointer;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-secondary);
-        }
-        .lang-btn.active-lang {
-            background: rgba(255, 245, 238, 0.1);
-            border-color: rgba(255, 245, 238, 0.3);
-            color: #fff;
-        }
-        .lang-btn:hover {
-            color: #fff;
-            background: rgba(255, 245, 238, 0.06);
-        }
+  /* MAP SECTION */
+  #location {
+    padding: 8rem 2rem; display: flex; flex-direction: column; align-items: center;
+  }
+  .map-wrapper {
+    width: 100%; max-width: 1000px; margin-top: 3rem;
+    position: relative; border: 1px solid var(--glass-border);
+    overflow: hidden; border-radius: 4px;
+  }
+  .map-wrapper iframe {
+    width: 100%; height: 480px; display: block; border: none;
+    filter: invert(90%) hue-rotate(180deg) saturate(0.8) brightness(0.85);
+  }
+  .map-overlay-info {
+    position: absolute; top: 1.5rem; left: 1.5rem;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem; max-width: 260px; border-radius: 4px;
+  }
+  .map-overlay-info h3 {
+    font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 0.6rem;
+  }
+  .map-overlay-info p {
+    font-size: 0.8rem; line-height: 1.8;
+    color: rgba(255,245,238,0.7);
+  }
+  .map-overlay-info .address-line {
+    margin-top: 0.8rem; font-size: 0.72rem; letter-spacing: 0.15em;
+    color: var(--gold);
+  }
 
-        @media (max-width: 768px) {
-            .bento-grid {
-                grid-template-columns: 1fr !important;
-                gap: 16px !important;
-            }
-            .specialists-row {
-                flex-direction: column !important;
-                gap: 20px !important;
-            }
-        }
-    </style>
+  /* CONTACT / FOOTER */
+  #contact {
+    padding: 6rem 2rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+    border-top: 1px solid var(--glass-border);
+  }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 3rem; max-width: 1000px; width: 100%;
+    margin: 3rem 0;
+  }
+  .contact-col h4 {
+    font-size: 0.65rem; letter-spacing: 0.45em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 1.2rem;
+  }
+  .contact-col p, .contact-col a {
+    font-size: 0.82rem; line-height: 2.1;
+    color: rgba(255,245,238,0.55); text-decoration: none;
+    display: block; transition: color 0.3s ease;
+  }
+  .contact-col a:hover { color: var(--rose); }
+  .footer-bottom {
+    width: 100%; max-width: 1000px;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-copy {
+    font-size: 0.62rem; letter-spacing: 0.25em;
+    color: rgba(255,245,238,0.3); text-transform: uppercase;
+  }
+  .footer-logo {
+    font-size: 0.75rem; letter-spacing: 0.4em; text-transform: uppercase;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* DIVIDER */
+  .luxury-divider {
+    width: 100%; max-width: 600px;
+    height: 1px; margin: 0 auto;
+    background: linear-gradient(90deg, transparent, var(--rose), var(--gold), var(--rose), transparent);
+    opacity: 0.4;
+  }
+
+  /* DIAGONAL LINES OVERLAY */
+  #diag-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+
+  /* ABOUT SECTION */
+  #about {
+    padding: 8rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .about-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; max-width: 1100px; width: 100%;
+    align-items: center;
+  }
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .bento-card.featured { grid-column: span 1; }
+  }
+  .about-text h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 300; line-height: 1.2; letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--cream), var(--rose));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+  }
+  .about-text p {
+    font-size: 0.9rem; line-height: 2; color: rgba(255,245,238,0.6);
+    margin-bottom: 1rem;
+  }
+  .about-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: 2rem; font-weight: 300;
+    background: linear-gradient(135deg, var(--rose), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.6rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: rgba(255,245,238,0.4); display: block; margin-top: 0.3rem;
+  }
+  .about-visual {
+    position: relative; height: 400px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .about-rings {
+    position: relative; width: 260px; height: 260px;
+  }
+  .ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid;
+  }
+  .ring-1 {
+    inset: 0; border-color: rgba(244,167,185,0.3);
+    animation: ringRotate 12s linear infinite;
+  }
+  .ring-2 {
+    inset: 20px; border-color: rgba(212,175,122,0.2);
+    animation: ringRotate 18s linear infinite reverse;
+  }
+  .ring-3 {
+    inset: 45px; border-color: rgba(244,167,185,0.15);
+    animation: ringRotate 25s linear infinite;
+  }
+  .ring-center {
+    position: absolute; inset: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(244,167,185,0.15), transparent);
+    border: 1px solid rgba(244,167,185,0.4);
+  }
+  @keyframes ringRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .ring::before {
+    content: '◆'; position: absolute; top: -6px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem; color: var(--rose);
+  }
+
+  /* PROCESS SECTION */
+  #process {
+    padding: 8rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .process-steps {
+    display: flex; gap: 0; max-width: 1100px; width: 100%;
+    margin-top: 4rem; flex-wrap: wrap;
+  }
+  .process-step {
+    flex: 1; min-width: 200px; padding: 2rem 1.5rem;
+    position: relative; border-top: 1px solid var(--glass-border);
+    transition: all 0.4s ease;
+  }
+  .process-step:hover { border-top-color: var(--rose); }
+  .step-num {
+    font-size: 3rem; font-weight: 300; letter-spacing: 0.05em;
+    background: linear-gradient(135deg, rgba(244,167,185,0.3), rgba(212,175,122,0.3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block; margin-bottom: 1rem; line-height: 1;
+  }
+  .step-title {
+    font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--cream); margin-bottom: 0.8rem;
+  }
+  .step-desc {
+    font-size: 0.78rem; line-height: 1.9;
+    color: rgba(255,245,238,0.45);
+  }
+
+  /* TESTIMONIALS */
+  #testimonials {
+    padding: 8rem 2rem;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; max-width: 1100px; width: 100%; margin-top: 3rem;
+  }
+  .testimonial-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 4px; padding: 2rem;
+    transition: all 0.4s ease;
+  }
+  .testimonial-card:hover {
+    border-color: rgba(244,167,185,0.3);
+    transform: translateY(-3px);
+  }
+  .testimonial-quote {
+    font-size: 0.88rem; line-height: 1.9; font-style: italic;
+    color: rgba(255,245,238,0.65); margin-bottom: 1.5rem;
+  }
+  .testimonial-author {
+    font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--rose);
+  }
+  .testimonial-city {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,245,238,0.3); margin-top: 0.3rem;
+  }
+
+  /* SMOOTH REVEAL ANIMATIONS */
+  .reveal-up {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  .reveal-up.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* LOADING SCREEN */
+  #loading {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.8s ease;
+  }
+  .loading-logo {
+    font-size: 0.8rem; letter-spacing: 0.6em; text-transform: uppercase;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 2.5rem;
+  }
+  .loading-bar-outer {
+    width: 200px; height: 1px;
+    background: rgba(255,245,238,0.1); position: relative;
+  }
+  .loading-bar-inner {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+    transition: width 0.1s linear;
+  }
+  .loading-percent {
+    margin-top: 1rem; font-size: 0.6rem; letter-spacing: 0.4em;
+    color: rgba(255,245,238,0.3);
+  }
+</style>
 </head>
-<body class="min-h-screen antialiased">
+<body>
 
-    <!-- Fixed Navbar -->
-    <nav class="glass-nav fixed top-0 left-0 w-full z-50 px-5 md:px-10 py-3.5 flex items-center justify-between" style="height:58px;">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-300 to-rose-100 flex items-center justify-center text-[#0a0a0b] font-bold text-xs">C</div>
-            <span class="text-sm md:text-base font-semibold tracking-widest text-[#f5efe8] uppercase">Beauty by Christina</span>
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="loading-logo">Beauty by Christina</div>
+  <div class="loading-bar-outer">
+    <div class="loading-bar-inner" id="loading-bar"></div>
+  </div>
+  <div class="loading-percent" id="loading-percent">0%</div>
+</div>
+
+<!-- WEBGL CANVAS CONTAINER -->
+<div id="canvas-container"></div>
+
+<!-- DIAGONAL PARTICLE CANVAS -->
+<canvas id="diag-canvas"></canvas>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="logo-text" data-i18n="logo">BEAUTY BY CHRISTINA</div>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('cz')">CZ</button>
+    <button class="lang-btn" onclick="setLang('ru')">RU</button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div id="pulse-ticker">
+  <div class="ticker-track" id="ticker-track">
+    <span class="ticker-item">POWDER BROWS</span>
+    <span class="ticker-item">LASH LAMINATION</span>
+    <span class="ticker-item">GLOW SKIN</span>
+    <span class="ticker-item">CHRISTINA BEAUTY</span>
+    <span class="ticker-item">PRAGUE LUXURY</span>
+    <span class="ticker-item">MICROBLADING</span>
+    <span class="ticker-item">NANO BROWS</span>
+    <span class="ticker-item">SKIN AESTHETIC</span>
+    <span class="ticker-item">POWDER BROWS</span>
+    <span class="ticker-item">LASH LAMINATION</span>
+    <span class="ticker-item">GLOW SKIN</span>
+    <span class="ticker-item">CHRISTINA BEAUTY</span>
+    <span class="ticker-item">PRAGUE LUXURY</span>
+    <span class="ticker-item">MICROBLADING</span>
+    <span class="ticker-item">NANO BROWS</span>
+    <span class="ticker-item">SKIN AESTHETIC</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow" data-i18n="hero_eyebrow" id="hero-eyebrow">Prague Premium Beauty Studio</div>
+  <h1 class="hero-title" id="hero-title">Beauty Salon<br>by Christina</h1>
+  <p class="hero-subtitle" data-i18n="hero_subtitle" id="hero-subtitle">Rybná 716/24 — Prague 1 — Since 2018</p>
+  <a href="#services" class="hero-cta" data-i18n="hero_cta" id="hero-cta">Discover the Experience</a>
+  <div class="scroll-indicator">
+    <span data-i18n="scroll">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-text">
+      <h2 data-i18n="about_title">Where Art Meets<br>Precision</h2>
+      <p data-i18n="about_p1">Nestled in the heart of Prague's historic centre, Beauty Salon by Christina is an exclusive atelier dedicated to the most refined beauty treatments available in Central Europe. Our philosophy blends cutting-edge technique with a deep respect for natural elegance.</p>
+      <p data-i18n="about_p2">Every procedure is approached as a bespoke work of art — thoughtfully designed, meticulously executed, and tailored to your unique facial architecture. We do not merely enhance; we sculpt, define, and perfect.</p>
+      <div class="about-stats">
+        <div class="stat-item">
+          <span class="stat-num">6+</span>
+          <span class="stat-label" data-i18n="years">Years</span>
         </div>
-        <div class="flex items-center gap-1.5 md:gap-3">
-            <button class="lang-btn active-lang" data-lang="en">EN</button>
-            <button class="lang-btn" data-lang="cz">CZ</button>
-            <button class="lang-btn" data-lang="ru">RU</button>
+        <div class="stat-item">
+          <span class="stat-num">2K+</span>
+          <span class="stat-label" data-i18n="clients">Clients</span>
         </div>
-    </nav>
+        <div class="stat-item">
+          <span class="stat-num">100%</span>
+          <span class="stat-label" data-i18n="satisfaction">Satisfaction</span>
+        </div>
+      </div>
+    </div>
+    <div class="about-visual">
+      <div class="about-rings">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="ring-center"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- Three.js Canvas Container -->
-    <div id="canvas-container"></div>
+<div class="luxury-divider"></div>
 
-    <!-- Data Pulse Text Elements -->
-    <div class="data-pulse" id="pulse-1" style="top:30%;left:-200px;">POWDER BROWS</div>
-    <div class="data-pulse" id="pulse-2" style="top:50%;left:-250px;">LASH LAMINATION</div>
-    <div class="data-pulse" id="pulse-3" style="top:70%;left:-180px;">GLOW SKIN</div>
-    <div class="data-pulse" id="pulse-4" style="top:40%;left:-300px;">CHRISTINA BEAUTY</div>
+<!-- SERVICES -->
+<section id="services">
+  <p class="section-label" data-i18n="services_label">Our Expertise</p>
+  <h2 class="section-title" data-i18n="services_title">Premium Services</h2>
+  <div id="bento-wrapper">
+    <div class="bento-grid" id="bento-grid">
 
-    <!-- Main Content Wrapper -->
-    <main id="main-content" class="relative z-10" style="pointer-events: auto;">
+      <!-- Card 1: Featured - Permanent Makeup -->
+      <div class="bento-card featured reveal-up" data-tilt>
+        <span class="bento-tag" data-i18n="bestseller">Bestseller</span>
+        <span class="bento-icon">✦</span>
+        <span class="bento-num">01 — PERMANENT MAKEUP</span>
+        <h3 class="bento-title" data-i18n="brow_title">Powder Brows & Nano Architecture</h3>
+        <p class="bento-desc" data-i18n="brow_desc">The Powder Brow technique creates a soft, diffused, makeup-like finish using thousands of precise micro-pixels implanted beneath the skin. Combined with our exclusive Nano-stroke architecture for natural hair simulation, this treatment delivers brows that are perfectly shaped, symmetrical, and tailored to your unique facial structure. Lasts 2–3 years with a single touch-up.</p>
+        <div class="bento-price" data-i18n="brow_price">From 4,500 CZK · 90–120 min</div>
+      </div>
 
-        <!-- Hero Section -->
-        <section id="hero" class="min-h-screen flex flex-col items-center justify-center text-center px-5 relative" style="padding-top:58px;">
-            <div class="glass-panel px-8 py-6 md:px-14 md:py-10 max-w-2xl mx-auto">
-                <p class="text-xs md:text-sm tracking-[0.3em] uppercase text-[#c4b8ad] mb-3" data-i18n="hero_subtitle">Premium Permanent Makeup & Brow Studio</p>
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-light tracking-[0.05em] text-[#f5efe8] leading-tight mb-4" data-i18n="hero_title">
-                    Beauty by<br>Christina
-                </h1>
-                <p class="text-sm md:text-base text-[#c4b8ad] max-w-lg mx-auto leading-relaxed" data-i18n="hero_desc">
-                    Where artistry meets precision in the heart of Prague. Experience the finest permanent makeup, brow architecture, and skin glow aesthetics.
-                </p>
-                <div class="mt-7 flex items-center justify-center gap-3 text-xs text-[#c4b8ad]">
-                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-300 inline-block"></span> Rybná 716/24</span>
-                    <span class="text-[#444]">|</span>
-                    <span>Praha 1</span>
-                </div>
-            </div>
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c4b8ad" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg>
-            </div>
-        </section>
+      <!-- Card 2: Lash -->
+      <div class="bento-card reveal-up reveal-delay-1" data-tilt>
+        <span class="bento-icon">◈</span>
+        <span class="bento-num">02 — LASH STUDIO</span>
+        <h3 class="bento-title" data-i18n="lash_title">Lash & Brow Architecture</h3>
+        <p class="bento-desc" data-i18n="lash_desc">Lash lamination, lift, and tint treatments that redefine the eye contour without the daily ritual. Our Brow Lamination service restructures and sets brow hairs in a lifted position for up to 8 weeks of effortless grooming. Combined with professional tinting, it creates a polished, structured frame for the eyes.</p>
+        <div class="bento-price" data-i18n="lash_price">From 1,800 CZK · 60 min</div>
+      </div>
 
-        <!-- Services Bento Grid Section -->
-        <section id="services" class="min-h-screen flex items-center justify-center px-5 py-20 relative">
-            <div id="bento-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto">
-                <!-- Card 1: Premium Permanent Makeup -->
-                <div class="bento-card p-7 md:p-10 flex flex-col justify-between" data-tilt-card>
-                    <div class="card-shimmer"></div>
-                    <div>
-                        <span class="text-[10px] tracking-[0.25em] uppercase text-rose-300/80 mb-2 block">Signature Service</span>
-                        <h3 class="text-2xl md:text-3xl font-light tracking-wide text-[#f5efe8] mb-3">Premium Permanent Makeup</h3>
-                        <p class="text-sm text-[#c4b8ad] leading-relaxed reveal-text blurred" data-reveal>
-                            Expertly applied permanent makeup including powder brows, microblading, lip blush, and eyeliner. Each treatment is customized to enhance your natural beauty with lasting, flawless results.
-                        </p>
-                    </div>
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Powder Brows</span>
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Microblading</span>
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Lip Blush</span>
-                    </div>
-                </div>
-                <!-- Card 2: Lash & Brow Architecture -->
-                <div class="bento-card p-6 md:p-8 flex flex-col justify-between" data-tilt-card>
-                    <div class="card-shimmer"></div>
-                    <div>
-                        <span class="text-[10px] tracking-[0.25em] uppercase text-rose-300/80 mb-2 block">Architecture</span>
-                        <h3 class="text-xl md:text-2xl font-light tracking-wide text-[#f5efe8] mb-2">Lash & Brow Architecture</h3>
-                        <p class="text-sm text-[#c4b8ad] leading-relaxed reveal-text blurred" data-reveal>
-                            Precision brow mapping, lash lifting, and lamination tailored to your unique facial structure for a naturally elevated look.
-                        </p>
-                    </div>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Lash Lamination</span>
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Brow Mapping</span>
-                    </div>
-                </div>
-                <!-- Card 3: Advanced Skin Glow -->
-                <div class="bento-card p-6 md:p-8 flex flex-col justify-between" data-tilt-card>
-                    <div class="card-shimmer"></div>
-                    <div>
-                        <span class="text-[10px] tracking-[0.25em] uppercase text-rose-300/80 mb-2 block">Radiance</span>
-                        <h3 class="text-xl md:text-2xl font-light tracking-wide text-[#f5efe8] mb-2">Advanced Skin Glow Aesthetics</h3>
-                        <p class="text-sm text-[#c4b8ad] leading-relaxed reveal-text blurred" data-reveal>
-                            Rejuvenating skin treatments designed to restore luminosity, even tone, and a youthful glow using premium aesthetic techniques.
-                        </p>
-                    </div>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Glow Peel</span>
-                        <span class="text-[10px] tracking-wider px-3 py-1.5 rounded-full border border-[#ffffff15] text-[#c4b8ad]">Collagen Boost</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+      <!-- Card 3: Skin -->
+      <div class="bento-card reveal-up reveal-delay-2" data-tilt>
+        <span class="bento-icon">❋</span>
+        <span class="bento-num">03 — SKIN AESTHETICS</span>
+        <h3 class="bento-title" data-i18n="skin_title">Advanced Glow Protocols</h3>
+        <p class="bento-desc" data-i18n="skin_desc">Our signature Glow Skin treatments combine micro-needling, hyaluronic infusion, and LED phototherapy to restore luminosity and youthful density to tired skin. Each protocol is individually prescribed following a detailed skin analysis. Suitable for all skin types and tones.</p>
+        <div class="bento-price" data-i18n="skin_price">From 2,900 CZK · 75 min</div>
+      </div>
 
-        <!-- Specialists Section -->
-        <section id="specialists" class="min-h-screen flex flex-col items-center justify-center px-5 py-20">
-            <h2 class="text-3xl md:text-5xl font-light tracking-wide text-[#f5efe8] mb-3 text-center">Our Specialists</h2>
-            <p class="text-sm text-[#c4b8ad] mb-12 text-center max-w-md">Meet the artists behind your transformation.</p>
-            <div class="specialists-row flex gap-8 md:gap-14 flex-wrap justify-center max-w-4xl mx-auto">
-                <div class="specialist-card w-64 md:w-72 p-5 text-center flex flex-col items-center">
-                    <div class="spec-img w-36 h-36 rounded-full mb-4 flex items-center justify-center text-5xl font-light text-[#f5efe8] select-none" style="background:linear-gradient(135deg,#2a1a1f 0%,#1a1416 50%,#0d0a0b 100%);border:2px solid #ffffff15;">C</div>
-                    <h4 class="text-lg font-medium tracking-wide text-[#f5efe8]">Christina</h4>
-                    <p class="text-xs text-rose-300/70 tracking-widest uppercase mt-1">Founder & Master Artist</p>
-                    <p class="text-sm text-[#c4b8ad] mt-3 leading-relaxed">10+ years of experience in permanent makeup and brow architecture. Certified across Europe with a passion for natural enhancement.</p>
-                </div>
-                <div class="specialist-card w-64 md:w-72 p-5 text-center flex flex-col items-center">
-                    <div class="spec-img w-36 h-36 rounded-full mb-4 flex items-center justify-center text-5xl font-light text-[#f5efe8] select-none" style="background:linear-gradient(135deg,#1f1a2a 0%,#14161a 50%,#0b0a0d 100%);border:2px solid #ffffff15;">E</div>
-                    <h4 class="text-lg font-medium tracking-wide text-[#f5efe8]">Elena</h4>
-                    <p class="text-xs text-rose-300/70 tracking-widest uppercase mt-1">Skin Aesthetics Specialist</p>
-                    <p class="text-sm text-[#c4b8ad] mt-3 leading-relaxed">Expert in advanced skin glow treatments and collagen restoration therapies with a gentle, holistic approach.</p>
-                </div>
-                <div class="specialist-card w-64 md:w-72 p-5 text-center flex flex-col items-center">
-                    <div class="spec-img w-36 h-36 rounded-full mb-4 flex items-center justify-center text-5xl font-light text-[#f5efe8] select-none" style="background:linear-gradient(135deg,#1a1f2a 0%,#14161a 50%,#0a0b0d 100%);border:2px solid #ffffff15;">M</div>
-                    <h4 class="text-lg font-medium tracking-wide text-[#f5efe8]">Markéta</h4>
-                    <p class="text-xs text-rose-300/70 tracking-widest uppercase mt-1">Lash & Brow Architect</p>
-                    <p class="text-sm text-[#c4b8ad] mt-3 leading-relaxed">Specializing in precision lash lifting and brow mapping with an eye for symmetry and natural beauty.</p>
-                </div>
-            </div>
-        </section>
+      <!-- Card 4: Microblading -->
+      <div class="bento-card reveal-up reveal-delay-3" data-tilt>
+        <span class="bento-icon">⬡</span>
+        <span class="bento-num">04 — MICROBLADING</span>
+        <h3 class="bento-title" data-i18n="micro_title">Hair Stroke Precision</h3>
+        <p class="bento-desc" data-i18n="micro_desc">Classic microblading using a hand-tool blade to deposit pigment in ultra-fine, hair-like strokes beneath the skin. Ideal for sparse brows requiring natural definition. Results appear painterly and genuine — indistinguishable from natural brow hair when executed with expert precision.</p>
+        <div class="bento-price" data-i18n="micro_price">From 3,800 CZK · 100 min</div>
+      </div>
 
-        <!-- Location Section -->
-        <section id="location" class="min-h-screen flex flex-col items-center justify-center px-5 py-20 max-w-5xl mx-auto">
-            <h2 class="text-3xl md:text-5xl font-light tracking-wide text-[#f5efe8] mb-12 text-center">Location & Contact</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center w-full">
-                <div class="space-y-6">
-                    <p class="text-[#c4b8ad] leading-relaxed text-sm">
-                        Our studio is situated right in the historic epicentre of Prague 1. Experience complete privacy, state-of-the-art sanitation, and luxurious, personalized beauty services.
-                    </p>
-                    <div class="font-mono text-xs space-y-2 text-[#c4b8ad]">
-                        <div class="text-[#f5efe8] font-sans text-sm font-semibold mb-2">ADDRESS & HOURS</div>
-                        <div>LOCATION: Rybná 716/24, 110 00 Staré Město, Prague 1</div>
-                        <div>MON - SUN: 09:00 — 20:00 (By Appointment Only)</div>
-                        <div>PHONE: +420 777 CHRISTINA</div>
-                    </div>
-                </div>
-                <div class="w-full h-80 dark-map">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2559.727836014546!2d14.4257917!3d50.0886111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470b94f5e5e5e5e5%3A0x0!2sRybn%C3%A1%20716%2F24%2C%20110%2000%20Star%C3%A9%20M%C4%9Bsto!5e0!3m2!1sen!2scz!4v1700000000000"
-                    class="w-full h-full border-0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Beauty Salon Prague - Rybná 716/24"></iframe>
-                </div>
-            </div>
-        </section>
+      <!-- Card 5: Lip Blush -->
+      <div class="bento-card reveal-up reveal-delay-4" data-tilt>
+        <span class="bento-icon">◉</span>
+        <span class="bento-num">05 — LIP STUDIO</span>
+        <h3 class="bento-title" data-i18n="lip_title">Lip Blush & Contour</h3>
+        <p class="bento-desc" data-i18n="lip_desc">A semi-permanent cosmetic tattoo technique that enhances the natural colour and shape of the lips. Lip Blush adds a gradient flush of pigment from the border inward, creating the appearance of fuller, more symmetrical lips with a beautifully defined Cupid's bow. Heals to a soft, stained-lip effect lasting 2–4 years.</p>
+        <div class="bento-price" data-i18n="lip_price">From 4,200 CZK · 110 min</div>
+      </div>
 
-        <!-- Footer -->
-        <footer class="w-full border-t border-zinc-900 py-10 px-5 text-center text-zinc-600 text-xs font-mono tracking-widest uppercase">
-            © 2026 BEAUTY BY CHRISTINA. ALL RIGHTS RESERVED.
-        </footer>
-    </main>
+      <!-- Card 6: Package -->
+      <div class="bento-card reveal-up" data-tilt style="background: linear-gradient(135deg, rgba(212,175,122,0.1), rgba(244,167,185,0.06));">
+        <span class="bento-tag" data-i18n="luxury">Luxury</span>
+        <span class="bento-icon">✧</span>
+        <span class="bento-num">06 — SIGNATURE PACKAGE</span>
+        <h3 class="bento-title" data-i18n="pkg_title">The Christina Total Edit</h3>
+        <p class="bento-desc" data-i18n="pkg_desc">The ultimate transformation package. Includes Powder Brows or Nano Brows, Lash Lamination + Tint, Brow Lamination, and a full Glow Skin facial protocol. Curated over two visits, this is our most comprehensive beauty enhancement offering, reserved for clients who demand uncompromising results.</p>
+        <div class="bento-price" data-i18n="pkg_price">From 9,500 CZK · Package of 2 visits</div>
+      </div>
 
-    <!-- Three.js r128 -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js">
-    </script>
-    <!-- GSAP + ScrollTrigger -->
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js">
-    </script>
+    </div>
+  </div>
+</section>
 
-    <script>
-        (function() {
-            // ─────────────────────────────────────
-            // MULTI-LANGUAGE TRANSLATION MATRIX
-            // ─────────────────────────────────────
-            const dict = {
-                en: {
-                    hero_subtitle: "Premium Permanent Makeup & Brow Studio",
-                    hero_title: "Beauty by<br>Christina",
-                    hero_desc: "Where artistry meets precision in the heart of Prague. Experience the finest permanent makeup, brow architecture, and skin glow aesthetics."
-                },
-                cz: {
-                    hero_subtitle: "Prémiové Permanentní Líčení & Obočí",
-                    hero_title: "Beauty by<br>Christina",
-                    hero_desc: "Kde se umění potkává s precizností v srdci Prahy. Zažijte nejlepší permanentní make-up, architekturu obočí a estetiku pleti."
-                },
-                ru: {
-                    hero_subtitle: "Премиальный Перманентный Макияж & Брови",
-                    hero_title: "Beauty by<br>Christina",
-                    hero_desc: "Где искусство встречается с точностью в самом сердце Праги. Откройте для себя лучший перманентный макияж, архитектуру бровей и сияние кожи."
-                }
-            };
+<div class="luxury-divider"></div>
 
-            function switchLang(lang) {
-                document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active-lang'));
-                document.querySelector(`.lang-btn[data-lang="${lang}"]`).classList.add('active-lang');
-                document.querySelector('[data-i18n="hero_subtitle"]').innerHTML = dict[lang].hero_subtitle;
-                document.querySelector('[data-i18n="hero_title"]').innerHTML = dict[lang].hero_title;
-                document.querySelector('[data-i18n="hero_desc"]').innerHTML = dict[lang].hero_desc;
-            }
+<!-- PROCESS -->
+<section id="process">
+  <p class="section-label" data-i18n="process_label">How It Works</p>
+  <h2 class="section-title" data-i18n="process_title">The Christina Method</h2>
+  <div class="process-steps">
+    <div class="process-step reveal-up">
+      <span class="step-num">01</span>
+      <div class="step-title" data-i18n="step1_title">Consultation</div>
+      <p class="step-desc" data-i18n="step1_desc">An in-depth face mapping and pigment analysis session to identify the perfect shape, colour, and treatment plan tailored to your unique facial structure.</p>
+    </div>
+    <div class="process-step reveal-up reveal-delay-1">
+      <span class="step-num">02</span>
+      <div class="step-title" data-i18n="step2_title">Design</div>
+      <p class="step-desc" data-i18n="step2_desc">Using digital symmetry tools, we draft the precise brow, lip, or eye design before any pigment is applied. You approve every millimetre before we begin.</p>
+    </div>
+    <div class="process-step reveal-up reveal-delay-2">
+      <span class="step-num">03</span>
+      <div class="step-title" data-i18n="step3_title">Application</div>
+      <p class="step-desc" data-i18n="step3_desc">Executed with calm precision using only premium, dermatologically tested European pigments. Topical anaesthetic ensures maximum comfort throughout.</p>
+    </div>
+    <div class="process-step reveal-up reveal-delay-3">
+      <span class="step-num">04</span>
+      <div class="step-title" data-i18n="step4_title">Aftercare</div>
+      <p class="step-desc" data-i18n="step4_desc">A detailed aftercare protocol and aftercare kit is provided. A complimentary follow-up touch-up is included within 6 weeks of your initial visit.</p>
+    </div>
+  </div>
+</section>
 
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.addEventListener('click', () => switchLang(btn.getAttribute('data-lang')));
-            });
-            switchLang('en');
+<div class="luxury-divider"></div>
 
-            // ─────────────────────────────────────
-            // REGISTER GSAP SCROLLTRIGGER
-            // ─────────────────────────────────────
-            gsap.registerPlugin(ScrollTrigger);
+<!-- SPECIALISTS -->
+<section id="specialists">
+  <p class="section-label" data-i18n="spec_label">The Team</p>
+  <h2 class="section-title" data-i18n="spec_title">Our Specialists</h2>
+  <div class="specialists-grid">
 
-            // ─────────────────────────────────────
-            // THREE.JS SETUP (r128 COMPATIBLE)
-            // ─────────────────────────────────────
-            const container = document.getElementById('canvas-container');
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0b);
+    <div class="specialist-card reveal-up">
+      <div class="specialist-avatar">✦</div>
+      <div class="specialist-name">Christina V.</div>
+      <div class="specialist-role" data-i18n="spec1_role">Founder & Lead Artist</div>
+      <p class="specialist-bio" data-i18n="spec1_bio">With over 8 years of international practice across Prague, Vienna, and Dubai, Christina is a certified Master in Permanent Makeup and Aesthetic Skin Treatments. She trained under the leading European PMU academies and has developed her own proprietary Powder-Nano hybrid technique. Christina's work has been recognised at the Central European Beauty Awards 2022 and 2023.</p>
+      <div class="specialist-skills">
+        <span class="skill-tag">Powder Brows</span>
+        <span class="skill-tag">Nano Strokes</span>
+        <span class="skill-tag">Lip Blush</span>
+        <span class="skill-tag">Skin Aesthetics</span>
+      </div>
+      <div class="specialist-rating">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+    </div>
 
-            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 40);
-            camera.position.set(0, 0, 4.6);
-            camera.lookAt(0, 0, 0);
+    <div class="specialist-card reveal-up reveal-delay-1">
+      <div class="specialist-avatar" style="background: linear-gradient(135deg, #d4af7a, #f4a7b9);">◈</div>
+      <div class="specialist-name">Alina K.</div>
+      <div class="specialist-role" data-i18n="spec2_role">Lash & Brow Architect</div>
+      <p class="specialist-bio" data-i18n="spec2_bio">Alina specialises in Lash Extensions, Lash Lifting, and Brow Lamination, holding international certifications from the Lash Academy London and the Czech Cosmetology Institute. Known for her meticulous precision and extraordinary attention to symmetry, Alina works exclusively with premium Korean silk lash fibres and organic lamination systems.</p>
+      <div class="specialist-skills">
+        <span class="skill-tag">Lash Lift</span>
+        <span class="skill-tag">Lash Extensions</span>
+        <span class="skill-tag">Brow Lamination</span>
+        <span class="skill-tag">Tinting</span>
+      </div>
+      <div class="specialist-rating">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+    </div>
 
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.15;
-            renderer.setClearColor(0x0a0a0b, 1);
-            container.appendChild(renderer.domElement);
+    <div class="specialist-card reveal-up reveal-delay-2">
+      <div class="specialist-avatar" style="background: linear-gradient(135deg, #f4a7b9, #c9a88a);">❋</div>
+      <div class="specialist-name">Markéta J.</div>
+      <div class="specialist-role" data-i18n="spec3_role">Skin Aesthetics Therapist</div>
+      <p class="specialist-bio" data-i18n="spec3_bio">A certified Aesthetic Skin Therapist with specialisation in advanced protocols including Microneedling, PRP Skin Therapy, and LED Photobiomodulation. Markéta holds a degree in Dermal Sciences from Charles University Prague and brings an evidence-based, clinical approach to every treatment. She is fluent in Czech, English, and German.</p>
+      <div class="specialist-skills">
+        <span class="skill-tag">Microneedling</span>
+        <span class="skill-tag">Glow Protocols</span>
+        <span class="skill-tag">LED Therapy</span>
+        <span class="skill-tag">Skin Analysis</span>
+      </div>
+      <div class="specialist-rating">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+    </div>
 
-            // ─────────────────────────────────────
-            // THE CORE MESH: TORUS KNOT (NACRE PEARL)
-            // ─────────────────────────────────────
-            const geometry = new THREE.TorusKnotGeometry(1.2, 0.32, 180, 24, 2, 3);
-            const material = new THREE.MeshStandardMaterial({
-                color: 0xfff5ee,
-                metalness: 0.9,
-                roughness: 0.03,
-                emissive: 0x110b08,
-                emissiveIntensity: 0.15,
-            });
-            const knotMesh = new THREE.Mesh(geometry, material);
-            knotMesh.position.set(0, 0, 0);
-            scene.add(knotMesh);
+  </div>
+</section>
 
-            // ─────────────────────────────────────
-            // COMPENSATED STUDIO LIGHTING
-            // ─────────────────────────────────────
-            const dirLight1 = new THREE.DirectionalLight(0xffffff, 5.0);
-            dirLight1.position.set(6, 6, 6);
-            scene.add(dirLight1);
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <p class="section-label" data-i18n="test_label">Client Stories</p>
+  <h2 class="section-title" data-i18n="test_title">Voices of Clients</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal-up">
+      <p class="testimonial-quote" data-i18n="test1_quote">"Christina's Powder Brows completely transformed my face. I wake up every morning looking polished without a single stroke of makeup. The result is so natural, even my husband didn't notice they were done — he just kept saying I looked more beautiful than ever."</p>
+      <div class="testimonial-author">— Petra N.</div>
+      <div class="testimonial-city">Prague, Czech Republic</div>
+    </div>
+    <div class="testimonial-card reveal-up reveal-delay-1">
+      <p class="testimonial-quote" data-i18n="test2_quote">"I flew from Vienna specifically for Christina's Nano Brow procedure after seeing her portfolio online. The precision and artistry are genuinely world-class. The studio itself feels like a luxury gallery — every detail considered. Worth every kilometre and every crown."</p>
+      <div class="testimonial-author">— Sophia M.</div>
+      <div class="testimonial-city">Vienna, Austria</div>
+    </div>
+    <div class="testimonial-card reveal-up reveal-delay-2">
+      <p class="testimonial-quote" data-i18n="test3_quote">"Alina did my lash lift and brow lamination in one session. I was genuinely astonished. I've had similar treatments elsewhere and they never lasted or looked this defined. Six weeks later and they still look freshly done. The aftercare advice was also excellent."</p>
+      <div class="testimonial-author">— Ivana R.</div>
+      <div class="testimonial-city">Brno, Czech Republic</div>
+    </div>
+  </div>
+</section>
 
-            const dirLight2 = new THREE.DirectionalLight(0xffb6c1, 3.5);
-            dirLight2.position.set(-6, -2, -4);
-            scene.add(dirLight2);
+<div class="luxury-divider"></div>
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
+<!-- LOCATION / MAP -->
+<section id="location">
+  <p class="section-label" data-i18n="loc_label">Find Us</p>
+  <h2 class="section-title" data-i18n="loc_title">Prague 1 — Rybná 716/24</h2>
+  <div class="map-wrapper">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2559.9578012!2d14.4243!3d50.0887!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470b94e7f5c5c5c5%3A0x0!2sRybn%C3%A1+716%2F24%2C+110+00+Star%C3%A9+M%C4%9Bsto%2C+Czechia!5e0!3m2!1sen!2scz!4v1704000000000!5m2!1sen!2scz"
+      allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+      title="Beauty Salon Prague by Christina - Rybna 716/24">
+    </iframe>
+    <div class="map-overlay-info">
+      <h3 data-i18n="studio_label">The Studio</h3>
+      <p data-i18n="studio_desc">Beauty Salon Prague by Christina<br>Premium Aesthetic Atelier</p>
+      <p class="address-line">Rybná 716/24<br>110 00 Staré Město<br>Prague 1, Czech Republic</p>
+    </div>
+  </div>
+</section>
 
-            const fillLight = new THREE.DirectionalLight(0xfff0e6, 1.8);
-            fillLight.position.set(0, -4, 2);
-            scene.add(fillLight);
+<!-- CONTACT / FOOTER -->
+<section id="contact">
+  <p class="section-label" data-i18n="contact_label">Get in Touch</p>
+  <h2 class="section-title" data-i18n="contact_title">Book Your Appointment</h2>
+  <div class="contact-grid">
+    <div class="contact-col">
+      <h4 data-i18n="studio_info">Studio</h4>
+      <p>Beauty Salon Prague by Christina</p>
+      <p>Rybná 716/24, Prague 1</p>
+      <p>110 00 Staré Město</p>
+      <p>Czech Republic</p>
+    </div>
+    <div class="contact-col">
+      <h4 data-i18n="hours_label">Hours</h4>
+      <p data-i18n="hours_mon">Mon – Fri: 09:00 – 19:00</p>
+      <p data-i18n="hours_sat">Saturday: 10:00 – 17:00</p>
+      <p data-i18n="hours_sun">Sunday: By appointment</p>
+    </div>
+    <div class="contact-col">
+      <h4 data-i18n="contact_info">Contact</h4>
+      <a href="tel:+420000000000">+420 000 000 000</a>
+      <a href="mailto:info@beautybyChristina.cz">info@beautybyChristina.cz</a>
+      <a href="#" data-i18n="ig_link">@beautybyChristina · Instagram</a>
+    </div>
+    <div class="contact-col">
+      <h4 data-i18n="languages_label">Languages</h4>
+      <p>English</p>
+      <p>Čeština</p>
+      <p>Русский</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy" data-i18n="copyright">© 2024 Beauty Salon Prague by Christina. All rights reserved.</div>
+    <div class="footer-logo">BEAUTY BY CHRISTINA</div>
+  </div>
+</section>
 
-            // ─────────────────────────────────────
-            // PARTICLE SYSTEM (2500+ PARTICLES)
-            // ─────────────────────────────────────
-            const PARTICLE_COUNT = 2600;
-            const particleBasePositions = new Float32Array(PARTICLE_COUNT * 3);
-            const particleCurrentPositions = new Float32Array(PARTICLE_COUNT * 3);
-            const particleVelocities = new Float32Array(PARTICLE_COUNT * 3);
-            const particlePhases = new Float32Array(PARTICLE_COUNT);
+<script>
+// ======================================================
+// LANGUAGE DICTIONARY
+// ======================================================
+const i18n = {
+  en: {
+    logo: "BEAUTY BY CHRISTINA",
+    hero_eyebrow: "Prague Premium Beauty Studio",
+    hero_subtitle: "Rybná 716/24 — Prague 1 — Since 2018",
+    hero_cta: "Discover the Experience",
+    scroll: "Scroll",
+    about_title: "Where Art Meets\nPrecision",
+    about_p1: "Nestled in the heart of Prague's historic centre, Beauty Salon by Christina is an exclusive atelier dedicated to the most refined beauty treatments available in Central Europe.",
+    about_p2: "Every procedure is approached as a bespoke work of art — thoughtfully designed, meticulously executed, and tailored to your unique facial architecture.",
+    years: "Years",
+    clients: "Clients",
+    satisfaction: "Satisfaction",
+    services_label: "Our Expertise",
+    services_title: "Premium Services",
+    bestseller: "Bestseller",
+    luxury: "Luxury",
+    brow_title: "Powder Brows & Nano Architecture",
+    brow_desc: "The Powder Brow technique creates a soft, diffused, makeup-like finish using thousands of precise micro-pixels implanted beneath the skin. Combined with our exclusive Nano-stroke architecture for natural hair simulation, this treatment delivers brows that are perfectly shaped, symmetrical, and tailored to your unique facial structure. Lasts 2–3 years with a single touch-up.",
+    brow_price: "From 4,500 CZK · 90–120 min",
+    lash_title: "Lash & Brow Architecture",
+    lash_desc: "Lash lamination, lift, and tint treatments that redefine the eye contour without the daily ritual. Our Brow Lamination service restructures and sets brow hairs in a lifted position for up to 8 weeks of effortless grooming.",
+    lash_price: "From 1,800 CZK · 60 min",
+    skin_title: "Advanced Glow Protocols",
+    skin_desc: "Our signature Glow Skin treatments combine micro-needling, hyaluronic infusion, and LED phototherapy to restore luminosity and youthful density to tired skin. Each protocol is individually prescribed following a detailed skin analysis.",
+    skin_price: "From 2,900 CZK · 75 min",
+    micro_title: "Hair Stroke Precision",
+    micro_desc: "Classic microblading using a hand-tool blade to deposit pigment in ultra-fine, hair-like strokes beneath the skin. Ideal for sparse brows requiring natural definition.",
+    micro_price: "From 3,800 CZK · 100 min",
+    lip_title: "Lip Blush & Contour",
+    lip_desc: "A semi-permanent cosmetic tattoo technique that enhances the natural colour and shape of the lips. Lip Blush adds a gradient flush of pigment from the border inward, creating the appearance of fuller, more symmetrical lips.",
+    lip_price: "From 4,200 CZK · 110 min",
+    pkg_title: "The Christina Total Edit",
+    pkg_desc: "The ultimate transformation package. Includes Powder Brows or Nano Brows, Lash Lamination + Tint, Brow Lamination, and a full Glow Skin facial protocol. Reserved for clients who demand uncompromising results.",
+    pkg_price: "From 9,500 CZK · Package of 2 visits",
+    process_label: "How It Works",
+    process_title: "The Christina Method",
+    step1_title: "Consultation",
+    step1_desc: "An in-depth face mapping and pigment analysis session to identify the perfect shape, colour, and treatment plan tailored to your unique facial structure.",
+    step2_title: "Design",
+    step2_desc: "Using digital symmetry tools, we draft the precise brow, lip, or eye design before any pigment is applied. You approve every millimetre before we begin.",
+    step3_title: "Application",
+    step3_desc: "Executed with calm precision using only premium, dermatologically tested European pigments. Topical anaesthetic ensures maximum comfort throughout.",
+    step4_title: "Aftercare",
+    step4_desc: "A detailed aftercare protocol and aftercare kit is provided. A complimentary follow-up touch-up is included within 6 weeks of your initial visit.",
+    spec_label: "The Team",
+    spec_title: "Our Specialists",
+    spec1_role: "Founder & Lead Artist",
+    spec1_bio: "With over 8 years of international practice across Prague, Vienna, and Dubai, Christina is a certified Master in Permanent Makeup and Aesthetic Skin Treatments. Her work has been recognised at the Central European Beauty Awards 2022 and 2023.",
+    spec2_role: "Lash & Brow Architect",
+    spec2_bio: "Alina specialises in Lash Extensions, Lash Lifting, and Brow Lamination, holding international certifications from the Lash Academy London and the Czech Cosmetology Institute.",
+    spec3_role: "Skin Aesthetics Therapist",
+    spec3_bio: "A certified Aesthetic Skin Therapist with specialisation in advanced protocols including Microneedling, PRP Skin Therapy, and LED Photobiomodulation. Holds a degree in Dermal Sciences from Charles University Prague.",
+    test_label: "Client Stories",
+    test_title: "Voices of Clients",
+    test1_quote: "\"Christina's Powder Brows completely transformed my face. I wake up every morning looking polished without a single stroke of makeup. The result is so natural, even my husband didn't notice they were done.\"",
+    test2_quote: "\"I flew from Vienna specifically for Christina's Nano Brow procedure. The precision and artistry are genuinely world-class. The studio itself feels like a luxury gallery — every detail considered.\"",
+    test3_quote: "\"Alina did my lash lift and brow lamination in one session. Six weeks later and they still look freshly done. The aftercare advice was also excellent.\"",
+    loc_label: "Find Us",
+    loc_title: "Prague 1 — Rybná 716/24",
+    studio_label: "The Studio",
+    studio_desc: "Beauty Salon Prague by Christina\nPremium Aesthetic Atelier",
+    contact_label: "Get in Touch",
+    contact_title: "Book Your Appointment",
+    studio_info: "Studio",
+    hours_label: "Hours",
+    hours_mon: "Mon – Fri: 09:00 – 19:00",
+    hours_sat: "Saturday: 10:00 – 17:00",
+    hours_sun: "Sunday: By appointment",
+    contact_info: "Contact",
+    ig_link: "@beautybyChristina · Instagram",
+    languages_label: "Languages",
+    copyright: "© 2024 Beauty Salon Prague by Christina. All rights reserved."
+  },
+  cz: {
+    logo: "BEAUTY BY CHRISTINA",
+    hero_eyebrow: "Prémiové Krásnické Studio Praha",
+    hero_subtitle: "Rybná 716/24 — Praha 1 — Od roku 2018",
+    hero_cta: "Objevte Zážitek",
+    scroll: "Scrollovat",
+    about_title: "Kde Umění Potkává\nPřesnost",
+    about_p1: "V srdci historického Prahy nabízí Beauty Salon by Christina exkluzivní ateliér zaměřený na nejrefinovanější kosmetická ošetření dostupná ve střední Evropě.",
+    about_p2: "Každý zákrok přistupujeme jako k uměleckému dílu — promyšleně navrhnutý, precizně provedený a přizpůsobený vaší jedinečné tváří.",
+    years: "Roky",
+    clients: "Klientky",
+    satisfaction: "Spokojenost",
+    services_label: "Naše Odbornost",
+    services_title: "Prémiové Služby",
+    bestseller: "Bestseller",
+    luxury: "Luxus",
+    brow_title: "Pudrové Obočí & Nano Architektura",
+    brow_desc: "Technika Pudrového Obočí vytváří jemný, diffúzní, make-up-like efekt pomocí tisíců přesných mikropixelů implantovaných pod kůži. Ve spojení s naší exkluzivní Nano-stroke architekturou tvoří dokonale tvarované, symetrické obočí.",
+    brow_price: "Od 4 500 Kč · 90–120 min",
+    lash_title: "Lash & Brow Architektura",
+    lash_desc: "Laminace řas, lifting a tónování, které redefinují kontur oka bez každodenní rutiny. Laminace obočí restrukturalizuje a fixuje obočí ve zdvihnuté poloze až na 8 týdnů.",
+    lash_price: "Od 1 800 Kč · 60 min",
+    skin_title: "Pokročilé Glow Protokoly",
+    skin_desc: "Naše Glow Skin ošetření kombinují mikrojehličkování, kyselinu hyaluronovou a LED fototerapii pro obnovu svítivosti a mladistvé hustoty unavené pleti.",
+    skin_price: "Od 2 900 Kč · 75 min",
+    micro_title: "Precizní Microblading",
+    micro_desc: "Klasický microblading ruční metodou pro ultra-jemné, vlasové tahy pod kůží. Ideální pro řídké obočí vyžadující přirozené definování.",
+    micro_price: "Od 3 800 Kč · 100 min",
+    lip_title: "Lip Blush & Kontura",
+    lip_desc: "Semi-permanentní technika tetování, která zvýrazňuje přirozená barvu a tvar rtů. Lip Blush přidává gradientní nádech pigmentu, vytváří plnější, symetričtější rty.",
+    lip_price: "Od 4 200 Kč · 110 min",
+    pkg_title: "The Christina Total Edit",
+    pkg_desc: "Ultimátní transformační balíček. Zahrnuje Pudrové Obočí nebo Nano Obočí, Laminaci Řas + Tónování, Laminaci Obočí a kompletní Glow Skin protokol.",
+    pkg_price: "Od 9 500 Kč · Balíček 2 návštěv",
+    process_label: "Jak To Funguje",
+    process_title: "Metoda Christiny",
+    step1_title: "Konzultace",
+    step1_desc: "Podrobná analýza obličeje a pigmentace pro identifikaci dokonalého tvaru, barvy a plánu ošetření přizpůsobeného vaší jedinečné tváři.",
+    step2_title: "Design",
+    step2_desc: "Pomocí digitálních nástrojů symetrie navrhujeme přesný design obočí, rtů nebo očí před aplikací jakéhokoli pigmentu.",
+    step3_title: "Aplikace",
+    step3_desc: "Prováděno s klidnou přesností pouze s prémiámi, dermatologicky testovanými evropskými pigmenty. Topická anestezie zajišťuje maximální pohodlí.",
+    step4_title: "Péče po Zákroku",
+    step4_desc: "Poskytujeme podrobný protokol a sadu péče po zákroku. Bezplatný doplňkový dotyk je zahrnut do 6 týdnů od vaší první návštěvy.",
+    spec_label: "Tým",
+    spec_title: "Naši Specialisté",
+    spec1_role: "Zakladatelka & Hlavní Umělkyně",
+    spec1_bio: "S více než 8 lety mezinárodní praxe v Praze, Vídni a Dubaji je Christina certifikovanou mistryní permanentního make-upu a estetiky kůže. Oceněna na Central European Beauty Awards 2022 a 2023.",
+    spec2_role: "Architektka Řas & Obočí",
+    spec2_bio: "Alina se specializuje na Lash Extensions, Lifting Řas a Laminaci Obočí s mezinárodními certifikacemi z Lash Academy London a Českého Kosmetologického Institutu.",
+    spec3_role: "Terapeutka Estetiky Pleti",
+    spec3_bio: "Certifikovaná terapeutka estetiky s specializací na pokročilé protokoly včetně mikrojehličkování, PRP terapie a LED fotobiomodulace. Absolventka Dermatologických věd na Karlově Univerzitě.",
+    test_label: "Příběhy Klientek",
+    test_title: "Hlasy Klientů",
+    test1_quote: "\"Pudrové obočí od Christiny mě úplně proměnilo. Každé ráno vstávám upravená bez jediného tahu make-upu. Výsledek je tak přirozený, že si to manžel ani nevšiml.\"",
+    test2_quote: "\"Letěla jsem z Vídně speciálně pro Nano Obočí od Christiny. Přesnost a umění jsou skutečně světové třídy. Salon samotný působí jako luxusní galerie.\"",
+    test3_quote: "\"Alina mi udělala lifting řas a laminaci obočí v jednom sezení. O šest týdnů později vypadají stále jako čerstvě udělané.\"",
+    loc_label: "Najít Nás",
+    loc_title: "Praha 1 — Rybná 716/24",
+    studio_label: "Salon",
+    studio_desc: "Beauty Salon Praha by Christina\nPrémiový Estetický Ateliér",
+    contact_label: "Kontaktujte Nás",
+    contact_title: "Rezervujte Svůj Termín",
+    studio_info: "Salon",
+    hours_label: "Otevírací Doba",
+    hours_mon: "Po – Pá: 09:00 – 19:00",
+    hours_sat: "Sobota: 10:00 – 17:00",
+    hours_sun: "Neděle: Dle domluvy",
+    contact_info: "Kontakt",
+    ig_link: "@beautybyChristina · Instagram",
+    languages_label: "Jazyky",
+    copyright: "© 2024 Beauty Salon Praha by Christina. Všechna práva vyhrazena."
+  },
+  ru: {
+    logo: "BEAUTY BY CHRISTINA",
+    hero_eyebrow: "Премиум Салон Красоты Прага",
+    hero_subtitle: "Rybná 716/24 — Прага 1 — С 2018 года",
+    hero_cta: "Открыть Опыт",
+    scroll: "Прокрутить",
+    about_title: "Где Искусство\nМеет Точность",
+    about_p1: "В самом сердце исторической Праги Beauty Salon by Christina — эксклюзивное ателье, посвящённое изысканным процедурам красоты в Центральной Европе.",
+    about_p2: "Каждая процедура — это произведение искусства: тщательно продуманное, безупречно выполненное, адаптированное к уникальной структуре вашего лица.",
+    years: "Лет",
+    clients: "Клиентки",
+    satisfaction: "Довольных",
+    services_label: "Наша Экспертиза",
+    services_title: "Премиум Услуги",
+    bestseller: "Хит продаж",
+    luxury: "Люкс",
+    brow_title: "Пудровые Брови & Нано Архитектура",
+    brow_desc: "Техника Пудровых Бровей создаёт мягкий, рассеянный эффект макияжа с помощью тысяч точных микропикселей, имплантированных под кожу. В сочетании с нашей эксклюзивной Нано-техникой для имитации натуральных волосков.",
+    brow_price: "От 4 500 CZK · 90–120 мин",
+    lash_title: "Архитектура Ресниц & Бровей",
+    lash_desc: "Ламинирование, подъём и окрашивание ресниц, переопределяющие контур глаза без ежедневного ритуала. Ламинирование бровей фиксирует волоски в поднятом положении до 8 недель.",
+    lash_price: "От 1 800 CZK · 60 мин",
+    skin_title: "Продвинутые Glow Протоколы",
+    skin_desc: "Наши Glow Skin процедуры сочетают микроиглинг, гиалуроновую инфузию и LED фототерапию для восстановления сияния и молодой плотности уставшей кожи.",
+    skin_price: "От 2 900 CZK · 75 мин",
+    micro_title: "Точный Микроблейдинг",
+    micro_desc: "Классический микроблейдинг ручным инструментом для ультратонких, волосковых штрихов под кожей. Идеально для редких бровей, требующих естественного определения.",
+    micro_price: "От 3 800 CZK · 100 мин",
+    lip_title: "Lip Blush & Контур",
+    lip_desc: "Полупостоянная техника татуажа, усиливающая естественный цвет и форму губ. Lip Blush создаёт градиентный румянец пигмента, придавая более полные, симметричные губы.",
+    lip_price: "От 4 200 CZK · 110 мин",
+    pkg_title: "The Christina Total Edit",
+    pkg_desc: "Ультимативный трансформационный пакет. Включает Пудровые Брови или Нано Брови, Ламинирование Ресниц + Окрашивание, Ламинирование Бровей и полный Glow Skin протокол.",
+    pkg_price: "От 9 500 CZK · Пакет 2 визита",
+    process_label: "Как Это Работает",
+    process_title: "Метод Кристины",
+    step1_title: "Консультация",
+    step1_desc: "Углублённый анализ лица и пигментации для определения идеальной формы, цвета и плана процедур, адаптированного к вашей уникальной структуре лица.",
+    step2_title: "Дизайн",
+    step2_desc: "С помощью инструментов цифровой симметрии разрабатываем точный дизайн бровей, губ или глаз до нанесения любого пигмента.",
+    step3_title: "Нанесение",
+    step3_desc: "Выполняется с точным спокойствием только с использованием премиальных европейских пигментов, протестированных дерматологически.",
+    step4_title: "Уход После",
+    step4_desc: "Предоставляется подробный протокол и набор для ухода. Бесплатная коррекция включена в течение 6 недель после первого визита.",
+    spec_label: "Команда",
+    spec_title: "Наши Специалисты",
+    spec1_role: "Основатель & Ведущий Мастер",
+    spec1_bio: "С более чем 8-летним международным опытом в Праге, Вене и Дубае, Кристина — сертифицированный мастер перманентного макияжа и эстетики кожи. Отмечена на Central European Beauty Awards 2022 и 2023.",
+    spec2_role: "Архитектор Ресниц & Бровей",
+    spec2_bio: "Алина специализируется на наращивании ресниц, подъёме и ламинировании бровей с международными сертификатами от Lash Academy London и Чешского Института Косметологии.",
+    spec3_role: "Терапевт Эстетики Кожи",
+    spec3_bio: "Сертифицированный терапевт эстетики кожи со специализацией в продвинутых протоколах включая микроиглинг, PRP-терапию и LED-фотобиомодуляцию. Степень в Дерматологических науках Карлова Университета.",
+    test_label: "Истории Клиентов",
+    test_title: "Голоса Клиентов",
+    test1_quote: "«Пудровые брови от Кристины полностью преобразили моё лицо. Каждое утро просыпаюсь ухоженной без единого штриха макияжа. Результат настолько естественный, что муж даже не заметил.»",
+    test2_quote: "«Я летела из Вены специально для Нано Бровей от Кристины. Точность и артистизм действительно мирового класса. Сам салон ощущается как роскошная галерея.»",
+    test3_quote: "«Алина сделала мне подъём ресниц и ламинирование бровей за один сеанс. Через шесть недель они всё ещё выглядят как только что сделанные.»",
+    loc_label: "Найти Нас",
+    loc_title: "Прага 1 — Rybná 716/24",
+    studio_label: "Студия",
+    studio_desc: "Beauty Salon Praha by Christina\nПремиальное Эстетическое Ателье",
+    contact_label: "Связаться",
+    contact_title: "Запишитесь на Приём",
+    studio_info: "Студия",
+    hours_label: "Часы Работы",
+    hours_mon: "Пн – Пт: 09:00 – 19:00",
+    hours_sat: "Суббота: 10:00 – 17:00",
+    hours_sun: "Воскресенье: По записи",
+    contact_info: "Контакт",
+    ig_link: "@beautybyChristina · Instagram",
+    languages_label: "Языки",
+    copyright: "© 2024 Beauty Salon Praha by Christina. Все права защищены."
+  }
+};
 
-            const SPREAD_RADIUS = 5.5;
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-                const r = SPREAD_RADIUS * (0.5 + Math.random() * 0.5);
-                const x = r * Math.sin(phi) * Math.cos(theta);
-                const y = r * Math.sin(phi) * Math.sin(theta);
-                const z = r * Math.cos(phi) * 0.6;
-                particleBasePositions[i * 3] = x;
-                particleBasePositions[i * 3 + 1] = y;
-                particleBasePositions[i * 3 + 2] = z;
-                particleCurrentPositions[i * 3] = x;
-                particleCurrentPositions[i * 3 + 1] = y;
-                particleCurrentPositions[i * 3 + 2] = z;
-                const speed = 0.015 + Math.random() * 0.06;
-                particleVelocities[i * 3] = 0.707 * speed;
-                particleVelocities[i * 3 + 1] = 0.707 * speed;
-                particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
-                particlePhases[i] = Math.random() * Math.PI * 2;
-            }
+let currentLang = 'en';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[lang] && i18n[lang][key] !== undefined) {
+      el.textContent = i18n[lang][key];
+    }
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.textContent.toLowerCase() === lang) btn.classList.add('active');
+  });
+}
 
-            const particleGeometry = new THREE.BufferGeometry();
-            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particleCurrentPositions, 3));
+// ======================================================
+// LOADING SCREEN
+// ======================================================
+(function runLoader() {
+  let pct = 0;
+  const bar = document.getElementById('loading-bar');
+  const pctEl = document.getElementById('loading-percent');
+  const loadingEl = document.getElementById('loading');
+  const interval = setInterval(() => {
+    pct += Math.random() * 12 + 3;
+    if (pct >= 100) {
+      pct = 100;
+      clearInterval(interval);
+      bar.style.width = '100%';
+      pctEl.textContent = '100%';
+      setTimeout(() => {
+        loadingEl.style.opacity = '0';
+        setTimeout(() => {
+          loadingEl.style.display = 'none';
+          triggerHeroEntrance();
+        }, 800);
+      }, 400);
+    }
+    bar.style.width = pct + '%';
+    pctEl.textContent = Math.floor(pct) + '%';
+  }, 80);
+})();
 
-            const dotCanvas = document.createElement('canvas');
-            dotCanvas.width = 20;
-            dotCanvas.height = 20;
-            const dotCtx = dotCanvas.getContext('2d');
-            dotCtx.fillStyle = '#ffffff';
-            dotCtx.beginPath();
-            dotCtx.arc(10, 10, 3.5, 0, Math.PI * 2);
-            dotCtx.fill();
-            dotCtx.fillStyle = 'rgba(255,220,210,0.5)';
-            dotCtx.beginPath();
-            dotCtx.arc(10, 10, 6, 0, Math.PI * 2);
-            dotCtx.fill();
-            const dotTexture = new THREE.CanvasTexture(dotCanvas);
+// ======================================================
+// THREE.JS SETUP
+// ======================================================
+const container = document.getElementById('canvas-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0);
+renderer.shadowMap.enabled = false;
+container.appendChild(renderer.domElement);
 
-            const particleMaterial = new THREE.PointsMaterial({
-                size: 0.035,
-                map: dotTexture,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                color: 0xfff5ee,
-                opacity: 0.7,
-                transparent: true,
-            });
-            const particles = new THREE.Points(particleGeometry, particleMaterial);
-            scene.add(particles);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 4.6);
 
-            // ─────────────────────────────────────
-            // MOUSE TRACKING STATE
-            // ─────────────────────────────────────
-            const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
-            document.addEventListener('mousemove', (e) => {
-                mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
-            });
-            document.addEventListener('touchmove', (e) => {
-                if (e.touches.length > 0) {
-                    mouse.targetX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
-                    mouse.targetY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-                }
-            }, { passive: true });
+// GEOMETRY - Torus Knot
+const geometry = new THREE.TorusKnotGeometry(1.2, 0.32, 180, 24, 2, 3);
 
-            // ─────────────────────────────────────
-            // GLOBAL STATE
-            // ─────────────────────────────────────
-            let diagonalPhase = 0;
-            let targetDiagonalPhase = 0;
-            let cameraBaseZ = 4.6;
-            let cameraTargetZ = 4.6;
+// MATERIAL - Liquid Nacre / Glossy Pearl
+const material = new THREE.MeshStandardMaterial({
+  color: 0xfff5ee,
+  metalness: 0.9,
+  roughness: 0.03
+});
 
-            // ─────────────────────────────────────
-            // GSAP SCROLLTRIGGER: CAMERA ZOOM
-            // ─────────────────────────────────────
-            gsap.timeline({
-                scrollTrigger: {
-                    trigger: '#hero',
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1.5,
-                    invalidateOnRefresh: true,
-                }
-            }).to({}, {
-                duration: 1,
-                onUpdate: function() {
-                    const progress = this.progress();
-                    cameraTargetZ = 4.6 - progress * 2.3;
-                }
-            });
+const mesh = new THREE.Mesh(geometry, material);
+mesh.position.set(0, 0, 0);
+scene.add(mesh);
 
-            // ─────────────────────────────────────
-            // GSAP SCROLLTRIGGER: SERVICES SECTION (WIREFRAME + DIAGONAL)
-            // ─────────────────────────────────────
-            ScrollTrigger.create({
-                trigger: '#services',
-                start: 'top 75%',
-                end: 'bottom 25%',
-                onEnter: () => {
-                    targetDiagonalPhase = 1;
-                    material.wireframe = true;
-                    material.color.set(0xffb6c1);
-                    material.emissive.set(0x331015);
-                    material.emissiveIntensity = 0.6;
-                    material.roughness = 0.5;
-                    material.metalness = 0.3;
-                    particleMaterial.color.set(0xffb6c1);
-                    particleMaterial.opacity = 0.9;
-                    document.querySelectorAll('.data-pulse').forEach(el => el.classList.add('active'));
-                },
-                onLeave: () => {
-                    targetDiagonalPhase = 0;
-                    material.wireframe = false;
-                    material.color.set(0xfff5ee);
-                    material.emissive.set(0x110b08);
-                    material.emissiveIntensity = 0.15;
-                    material.roughness = 0.03;
-                    material.metalness = 0.9;
-                    particleMaterial.color.set(0xfff5ee);
-                    particleMaterial.opacity = 0.7;
-                    document.querySelectorAll('.data-pulse').forEach(el => el.classList.remove('active'));
-                },
-                onEnterBack: () => {
-                    targetDiagonalPhase = 1;
-                    material.wireframe = true;
-                    material.color.set(0xffb6c1);
-                    material.emissive.set(0x331015);
-                    material.emissiveIntensity = 0.6;
-                    material.roughness = 0.5;
-                    material.metalness = 0.3;
-                    particleMaterial.color.set(0xffb6c1);
-                    particleMaterial.opacity = 0.9;
-                    document.querySelectorAll('.data-pulse').forEach(el => el.classList.add('active'));
-                },
-                onLeaveBack: () => {
-                    targetDiagonalPhase = 0;
-                    material.wireframe = false;
-                    material.color.set(0xfff5ee);
-                    material.emissive.set(0x110b08);
-                    material.emissiveIntensity = 0.15;
-                    material.roughness = 0.03;
-                    material.metalness = 0.9;
-                    particleMaterial.color.set(0xfff5ee);
-                    particleMaterial.opacity = 0.7;
-                    document.querySelectorAll('.data-pulse').forEach(el => el.classList.remove('active'));
-                }
-            });
+// STUDIO LIGHTING
+const dirLight1 = new THREE.DirectionalLight(0xffffff, 5.0);
+dirLight1.position.set(6, 6, 6);
+scene.add(dirLight1);
 
-            // ─────────────────────────────────────
-            // GSAP: BENTO CONTAINER DIAGONAL SLIDE
-            // ─────────────────────────────────────
-            const bentoContainer = document.getElementById('bento-container');
-            if (bentoContainer) {
-                gsap.fromTo(bentoContainer, {
-                    x: 0,
-                    y: 0,
-                }, {
-                    x: '130vw',
-                    y: '-130vh',
-                    ease: 'none',
-                    scrollTrigger: {
-                        trigger: '#services',
-                        start: 'top 60%',
-                        end: 'bottom 20%',
-                        scrub: 1.5,
-                        invalidateOnRefresh: true,
-                    }
-                });
-            }
+const dirLight2 = new THREE.DirectionalLight(0xffb6c1, 3.5);
+dirLight2.position.set(-6, -2, -4);
+scene.add(dirLight2);
 
-            // ─────────────────────────────────────
-            // DATA PULSE ANIMATIONS
-            // ─────────────────────────────────────
-            const pulseEls = document.querySelectorAll('.data-pulse');
-            const pulseData = [
-                { el: pulseEls[0], baseX: -200, baseY: 30, speedX: 2.5, speedY: 2.5 },
-                { el: pulseEls[1], baseX: -250, baseY: 50, speedX: 2.1, speedY: 2.1 },
-                { el: pulseEls[2], baseX: -180, baseY: 70, speedX: 2.8, speedY: 2.8 },
-                { el: pulseEls[3], baseX: -300, baseY: 40, speedX: 2.3, speedY: 2.3 },
-            ];
-            let pulseTime = 0;
+const dirLight3 = new THREE.DirectionalLight(0xd4af7a, 2.0);
+dirLight3.position.set(0, -8, 3);
+scene.add(dirLight3);
 
-            // ─────────────────────────────────────
-            // BENTO CARD TILT TRACKING
-            // ─────────────────────────────────────
-            document.querySelectorAll('[data-tilt-card]').forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height / 2;
-                    const dx = (e.clientX - cx) / (rect.width / 2);
-                    const dy = (e.clientY - cy) / (rect.height / 2);
-                    const tiltX = dy * 6;
-                    const tiltY = -dx * 6;
-                    card.style.transform =
-                        `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-3px)`;
-                });
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform =
-                        'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px)';
-                });
-            });
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
 
-            // ─────────────────────────────────────
-            // REVEAL TEXT OBSERVER (blur-to-clear)
-            // ─────────────────────────────────────
-            const revealObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.remove('blurred');
-                        entry.target.classList.add('clear');
-                    } else {
-                        entry.target.classList.add('blurred');
-                        entry.target.classList.remove('clear');
-                    }
-                });
-            }, { threshold: 0.3 });
-            document.querySelectorAll('[data-reveal]').forEach(el => {
-                el.classList.add('blurred');
-                revealObserver.observe(el);
-            });
+// Point light for extra shimmer
+const pointLight1 = new THREE.PointLight(0xffb6c1, 3.0, 12);
+pointLight1.position.set(3, 3, 3);
+scene.add(pointLight1);
 
-            // ─────────────────────────────────────
-            // WINDOW RESIZE HANDLER
-            // ─────────────────────────────────────
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
+const pointLight2 = new THREE.PointLight(0xd4af7a, 2.0, 10);
+pointLight2.position.set(-3, -3, -2);
+scene.add(pointLight2);
 
-            // ─────────────────────────────────────
-            // ANIMATION LOOP
-            // ─────────────────────────────────────
-            const clock = new THREE.Clock();
+// MOUSE TRACKING
+let mouseX = 0, mouseY = 0;
+let targetRotX = 0, targetRotY = 0;
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
 
-            function animate(timestamp) {
-                requestAnimationFrame(animate);
+// SCROLL STATE
+let scrollProgress = 0;
+let wireframeActive = false;
+let knotVisible = true;
 
-                const dt = Math.min(clock.getDelta(), 0.1);
-                const elapsed = timestamp * 0.001;
+// GSAP SCROLL TRIGGER
+gsap.registerPlugin(ScrollTrigger);
 
-                // Smooth mouse dampening
-                mouse.x = THREE.MathUtils.lerp(mouse.x, mouse.targetX, 0.05);
-                mouse.y = THREE.MathUtils.lerp(mouse.y, mouse.targetY, 0.05);
+// Camera zoom on scroll (hero -> services)
+ScrollTrigger.create({
+  trigger: '#services',
+  start: 'top bottom',
+  end: 'top top',
+  scrub: 1.5,
+  onUpdate: (self) => {
+    const p = self.progress;
+    scrollProgress = p;
+    // Cinematic zoom into mesh
+    camera.position.z = THREE.MathUtils.lerp(4.6, 2.2, p * p);
+    // Fade to wireframe
+    if (p > 0.7 && !wireframeActive) {
+      wireframeActive = true;
+      gsap.to(material, { roughness: 0.8, metalness: 0.2, duration: 0.6 });
+      material.wireframe = true;
+      gsap.to('#diag-canvas', { opacity: 1, duration: 0.8 });
+    } else if (p < 0.5 && wireframeActive) {
+      wireframeActive = false;
+      gsap.to(material, { roughness: 0.03, metalness: 0.9, duration: 0.6 });
+      material.wireframe = false;
+      gsap.to('#diag-canvas', { opacity: 0, duration: 0.8 });
+    }
+  }
+});
 
-                // Smooth diagonal phase transition
-                diagonalPhase = THREE.MathUtils.lerp(diagonalPhase, targetDiagonalPhase, 0.04);
+// Re-assemble after services
+ScrollTrigger.create({
+  trigger: '#specialists',
+  start: 'top 80%',
+  onEnter: () => {
+    gsap.to(camera.position, { z: 4.6, duration: 1.8, ease: 'power2.out' });
+    material.wireframe = false;
+    gsap.to(material, { roughness: 0.03, metalness: 0.9, duration: 1.2 });
+    gsap.to('#diag-canvas', { opacity: 0, duration: 1.0 });
+  },
+  onLeaveBack: () => {
+    wireframeActive = true;
+    material.wireframe = true;
+    gsap.to('#diag-canvas', { opacity: 1, duration: 0.8 });
+  }
+});
 
-                // Smooth camera zoom
-                cameraBaseZ = THREE.MathUtils.lerp(cameraBaseZ, cameraTargetZ, 0.04);
-                camera.position.z = cameraBaseZ;
+// BENTO DIAGONAL EXIT
+ScrollTrigger.create({
+  trigger: '#bento-wrapper',
+  start: 'top 30%',
+  end: 'bottom -20%',
+  scrub: 1.2,
+  onUpdate: (self) => {
+    const p = self.progress;
+    if (p > 0.05) {
+      gsap.to('#bento-grid', {
+        x: p * window.innerWidth * 0.85,
+        y: p * -window.innerHeight * 0.4,
+        opacity: p < 0.85 ? 1 : Math.max(0, 1 - (p - 0.85) * 6.67),
+        duration: 0.3,
+        ease: 'none'
+      });
+    } else {
+      gsap.to('#bento-grid', { x: 0, y: 0, opacity: 1, duration: 0.3 });
+    }
+  }
+});
 
-                // Rotate knot based on mouse with dampening
-                const targetRotY = mouse.x * 0.6;
-                const targetRotX = mouse.y * 0.35;
-                knotMesh.rotation.y = THREE.MathUtils.lerp(knotMesh.rotation.y, targetRotY, 0.03);
-                knotMesh.rotation.x = THREE.MathUtils.lerp(knotMesh.rotation.x, targetRotX, 0.03);
-                knotMesh.rotation.y += 0.0015 * (1 - diagonalPhase);
-                knotMesh.rotation.z += 0.0006 * (1 - diagonalPhase);
+// ======================================================
+// DIAGONAL PARTICLE / LINES CANVAS
+// ======================================================
+const diagCanvas = document.getElementById('diag-canvas');
+const dCtx = diagCanvas.getContext('2d');
+diagCanvas.width = window.innerWidth;
+diagCanvas.height = window.innerHeight;
 
-                // Update particles
-                const posArr = particleGeometry.attributes.position.array;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const i3 = i * 3;
-                    const bx = particleBasePositions[i3];
-                    const by = particleBasePositions[i3 + 1];
-                    const bz = particleBasePositions[i3 + 2];
-                    const vx = particleVelocities[i3];
-                    const vy = particleVelocities[i3 + 1];
-                    const vz = particleVelocities[i3 + 2];
-                    const phase = particlePhases[i];
+const PARTICLE_COUNT = 180;
+const particles = [];
 
-                    if (diagonalPhase > 0.01) {
-                        const streamOffset = elapsed * 0.8 + phase * 10;
-                        const sx = (streamOffset * vx * 40) % (SPREAD_RADIUS * 3) - SPREAD_RADIUS * 1.5;
-                        const sy = (streamOffset * vy * 40) % (SPREAD_RADIUS * 3) - SPREAD_RADIUS * 1.5;
-                        const sz = (Math.sin(streamOffset * 0.5 + phase) * 0.8);
+function createParticles() {
+  particles.length = 0;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (1.5 + Math.random() * 2.5),
+      vy: -(1.5 + Math.random() * 2.5),
+      size: 0.8 + Math.random() * 2,
+      alpha: 0.2 + Math.random() * 0.7,
+      color: Math.random() > 0.5 ? '#f4a7b9' : '#d4af7a',
+      trail: [],
+      trailLength: 8 + Math.floor(Math.random() * 20)
+    });
+  }
+}
+createParticles();
 
-                        const mx = THREE.MathUtils.lerp(bx + Math.sin(elapsed * 0.7 + phase) * 0.25, sx, diagonalPhase);
-                        const my = THREE.MathUtils.lerp(by + Math.cos(elapsed * 0.6 + phase) * 0.25, sy, diagonalPhase);
-                        const mz = THREE.MathUtils.lerp(bz + Math.cos(elapsed * 0.55 + phase) * 0.2, sz, diagonalPhase);
+// Data pulse strings along diagonals
+const dataPulses = [
+  { text: 'POWDER BROWS', x: 50, y: window.innerHeight * 0.8, progress: 0, speed: 1.8, color: '#f4a7b9' },
+  { text: 'LASH LAMINATION', x: 200, y: window.innerHeight * 0.9, progress: 0, speed: 2.1, color: '#d4af7a' },
+  { text: 'GLOW SKIN', x: 380, y: window.innerHeight * 0.75, progress: 0, speed: 1.6, color: '#fff5ee' },
+  { text: 'CHRISTINA BEAUTY', x: 100, y: window.innerHeight, progress: 0, speed: 2.4, color: '#f4a7b9' },
+  { text: 'NANO BROWS', x: 550, y: window.innerHeight * 0.85, progress: 0, speed: 1.9, color: '#d4af7a' },
+  { text: 'PRAGUE PMU', x: 720, y: window.innerHeight * 0.95, progress: 0, speed: 2.2, color: '#fff5ee' },
+];
 
-                        posArr[i3] = mx;
-                        posArr[i3 + 1] = my;
-                        posArr[i3 + 2] = mz;
-                    } else {
-                        posArr[i3] = bx + Math.sin(elapsed * 0.7 + phase) * 0.25;
-                        posArr[i3 + 1] = by + Math.cos(elapsed * 0.6 + phase) * 0.25;
-                        posArr[i3 + 2] = bz + Math.cos(elapsed * 0.55 + phase) * 0.2;
-                    }
-                }
-                particleGeometry.attributes.position.needsUpdate = true;
+function animateParticles() {
+  if (parseFloat(diagCanvas.style.opacity || 0) < 0.05) {
+    requestAnimationFrame(animateParticles);
+    return;
+  }
+  dCtx.clearRect(0, 0, diagCanvas.width, diagCanvas.height);
 
-                // Update data pulses
-                pulseTime += dt;
-                pulseData.forEach((pd, idx) => {
-                    if (diagonalPhase > 0.3 && pd.el.classList.contains('active')) {
-                        const offset = (pulseTime * pd.speedX * 60 + idx * 400) % (window.innerWidth + 600) - 300;
-                        const x = offset;
-                        const y = pd.baseY + offset * 0.7;
-                        pd.el.style.left = x + 'px';
-                        pd.el.style.top = Math.max(-20, Math.min(window.innerHeight - 20, y)) + 'px';
-                        pd.el.style.opacity = Math.min(1, diagonalPhase);
-                    } else if (diagonalPhase < 0.2) {
-                        pd.el.style.opacity = Math.max(0, diagonalPhase * 3);
-                    }
-                });
+  // Draw diagonal grid lines
+  dCtx.save();
+  dCtx.strokeStyle = 'rgba(244,167,185,0.04)';
+  dCtx.lineWidth = 1;
+  const step = 60;
+  for (let x = -diagCanvas.height; x < diagCanvas.width + diagCanvas.height; x += step) {
+    dCtx.beginPath();
+    dCtx.moveTo(x, diagCanvas.height);
+    dCtx.lineTo(x + diagCanvas.height, 0);
+    dCtx.stroke();
+  }
+  dCtx.restore();
 
-                renderer.render(scene, camera);
-            }
+  // Update & draw particles with trails
+  particles.forEach(p => {
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > p.trailLength) p.trail.shift();
 
-            requestAnimationFrame(animate);
-            console.log('%c✨ Beauty Salon Prague by Christina %c| %cThree.js Nacre Glow Engine Active',
-                'color:#ffb6c1;font-size:16px;', '', 'color:#f5efe8;');
-        })();
-    </script>
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.x > diagCanvas.width + 40) p.x = -40;
+    if (p.y < -40) p.y = diagCanvas.height + 40;
+
+    // Draw trail
+    if (p.trail.length > 1) {
+      for (let i = 1; i < p.trail.length; i++) {
+        const alpha = (i / p.trail.length) * p.alpha * 0.6;
+        dCtx.beginPath();
+        dCtx.strokeStyle = p.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba').replace('#f4a7b9', `rgba(244,167,185,${alpha})`).replace('#d4af7a', `rgba(212,175,122,${alpha})`);
+        dCtx.lineWidth = p.size * (i / p.trail.length);
+        dCtx.moveTo(p.trail[i - 1].x, p.trail[i - 1].y);
+        dCtx.lineTo(p.trail[i].x, p.trail[i].y);
+        dCtx.stroke();
+      }
+    }
+
+    // Draw particle dot
+    dCtx.beginPath();
+    dCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    const col = p.color === '#f4a7b9' ? `rgba(244,167,185,${p.alpha})` : `rgba(212,175,122,${p.alpha})`;
+    dCtx.fillStyle = col;
+    dCtx.shadowBlur = 8;
+    dCtx.shadowColor = p.color;
+    dCtx.fill();
+    dCtx.shadowBlur = 0;
+  });
+
+  // Draw connecting lines between close particles
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 90) {
+        const alpha = (1 - dist / 90) * 0.15;
+        dCtx.beginPath();
+        dCtx.strokeStyle = `rgba(244,167,185,${alpha})`;
+        dCtx.lineWidth = 0.5;
+        dCtx.moveTo(particles[i].x, particles[i].y);
+        dCtx.lineTo(particles[j].x, particles[j].y);
+        dCtx.stroke();
+      }
+    }
+  }
+
+  // Animate data pulses
+  dataPulses.forEach(pulse => {
+    pulse.progress += pulse.speed;
+    const px = pulse.x + pulse.progress;
+    const py = pulse.y - pulse.progress;
+    if (px > diagCanvas.width + 200 || py < -50) {
+      pulse.progress = 0;
+    }
+    dCtx.save();
+    dCtx.font = '600 9px monospace';
+    dCtx.letterSpacing = '4px';
+    dCtx.fillStyle = pulse.color === '#fff5ee' ? 'rgba(255,245,238,0.45)' :
+                     pulse.color === '#f4a7b9' ? 'rgba(244,167,185,0.6)' :
+                     'rgba(212,175,122,0.55)';
+    dCtx.shadowBlur = 6;
+    dCtx.shadowColor = pulse.color;
+    dCtx.fillText(pulse.text, px, py);
+    dCtx.restore();
+  });
+
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ======================================================
+// ANIMATION LOOP
+// ======================================================
+const clock = new THREE.Clock();
+let currentRotX = 0, currentRotY = 0;
+let lightAngle = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+  lightAngle += 0.008;
+
+  // Smooth mouse tracking with heavy dampening
+  targetRotY = mouseX * 0.55;
+  targetRotX = mouseY * -0.35;
+  currentRotY = THREE.MathUtils.lerp(currentRotY, targetRotY, 0.05);
+  currentRotX = THREE.MathUtils.lerp(currentRotX, targetRotX, 0.05);
+
+  // Continuous slow auto-rotation + mouse influence
+  mesh.rotation.x = currentRotX + elapsed * 0.08;
+  mesh.rotation.y = currentRotY + elapsed * 0.12;
+  mesh.rotation.z = elapsed * 0.04;
+
+  // Animate orbiting lights
+  pointLight1.position.x = Math.sin(lightAngle) * 4;
+  pointLight1.position.z = Math.cos(lightAngle) * 4;
+  pointLight2.position.x = Math.cos(lightAngle * 1.3) * -3.5;
+  pointLight2.position.y = Math.sin(lightAngle * 0.7) * 3;
+
+  // Subtle knot scale breathe
+  const breathe = 1 + Math.sin(elapsed * 0.9) * 0.025;
+  mesh.scale.setScalar(breathe);
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ======================================================
+// HERO ENTRANCE ANIMATION
+// ======================================================
+function triggerHeroEntrance() {
+  gsap.to('#hero-eyebrow', { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', delay: 0.2 });
+  gsap.to('#hero-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out', delay: 0.5 });
+  gsap.to('#hero-subtitle', { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', delay: 0.9 });
+  gsap.to('#hero-cta', { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', delay: 1.2 });
+}
+
+// ======================================================
+// BENTO CARD TILT
+// ======================================================
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);
+    const dy = (e.clientY - cy) / (rect.height / 2);
+    card.style.transform = `perspective(800px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg) translateZ(6px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+  });
+});
+
+// ======================================================
+// INTERSECTION OBSERVER — REVEAL ON SCROLL
+// ======================================================
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
+
+// ======================================================
+// RESIZE HANDLER
+// ======================================================
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  diagCanvas.width = window.innerWidth;
+  diagCanvas.height = window.innerHeight;
+  dataPulses.forEach((p, i) => {
+    p.y = window.innerHeight * (0.75 + i * 0.04);
+  });
+});
+
+// ======================================================
+// NAVBAR SCROLL BEHAVIOUR
+// ======================================================
+window.addEventListener('scroll', () => {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 60) {
+    navbar.style.background = 'rgba(10,10,15,0.88)';
+    navbar.style.borderBottomColor = 'rgba(244,167,185,0.25)';
+  } else {
+    navbar.style.background = 'rgba(10,10,15,0.55)';
+    navbar.style.borderBottomColor = 'rgba(244,167,185,0.18)';
+  }
+});
+
+// ======================================================
+// SMOOTH SCROLL FOR ANCHOR LINKS
+// ======================================================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+</script>
 </body>
 </html>
 ```
